@@ -1,0 +1,11 @@
+.venv
+__pycache__/
+*.pyc
+
+# Ignored generated model and datasets
+energy_data.csv
+model.joblib
+
+# OS specific files
+.DS_Store
+Thumbs.db
