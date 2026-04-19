@@ -9,3 +9,6 @@ model.joblib
 # OS specific files
 .DS_Store
 Thumbs.db
+xgboost_model.joblib
+logs/
+

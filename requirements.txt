@@ -4,3 +4,8 @@ matplotlib
 streamlit
 numpy
 plotly
+xgboost
+fastapi
+uvicorn
+pydantic
+python-multipart

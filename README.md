@@ -1,65 +1,74 @@
-# ⚡ Energy Consumption Forecasting System
+# ⚡ Energy Consumption Forecasting System (Production Ready)
 
-An interactive, machine-learning-powered web dashboard designed to simulate and forecast electrical grid loads based on historical energy data, extreme weather scenarios, and modern grid-disruption technologies (like EVs and Solar power).
+A production-grade, full-stack machine learning application designed to forecast and simulate electrical grid loads using advanced time-series feature engineering and an optimized **XGBoost** model. It features a modern, responsive React dashboard and a robust FastAPI backend.
 
-## 📖 Project Overview
-This project simulates an end-to-end data science pipeline. It synthesizes a realistic energy usage dataset, trains a Machine Learning model (**Random Forest Regressor**) to learn consumption patterns, and serves up a powerful **Streamlit** web dashboard. Users can explore historical trends and utilize an interactive "Sandbox" to predict future grid stress when subjected to extreme weather or technological shifts.
+## 📖 Problem Statement
+Predicting energy consumption accurately is critical for power grid stability. High-load periods caused by extreme weather (HVAC usage) or changing technology (Simultaneous EV charging) can overload grid infrastructure. This system allows stakeholders to proactively simulate these "What-If" scenarios in an interactive sandbox.
 
-## ✨ Key Pros & Advantages
-- **Deep Interactivity (Grid Sandbox)**: Instead of passive static charts, users can manipulate grid behavior in real-time. You can manually edit hour-by-hour temperatures via an editable data table to instantly visualize grid strain.
-- **"What-If" Game-Theoretic Analysis**: Built-in toggle switches allow users to mathematically impose grid strains, such as adding 10,000 Electric Vehicles (evening load surge) or integrating Regional Solar Generation (daytime load drops, creating the famous "Duck Curve" effect).
-- **Dynamic Grid Overload Warnings**: The system evaluates historical capacity limits and automatically redlines grid failure conditions if simulated user consumption dangerously exceeds the limits.
-- **Explainable AI (XAI) Insights**: The dashboard actively highlights relative **Feature Importances**, giving total transparency into how the Random Forest algorithm weights inputs like time-of-day versus atmospheric conditions.
-- **Fast, Local Architecture**: The app seamlessly combines data ingestion, model processing, and the front-end interface into a single, highly performant Python project without requiring heavy external database dependencies.
+## 🏗️ Architecture
 
-## ⚙️ How It Works (Technical Architecture)
+```mermaid
+graph TD
+    A[React/Vite Frontend] -->|REST API Request| B(FastAPI Backend)
+    A -->|Batch CSV Upload| B
+    B --> C{Data Preprocessing Pipeline}
+    C -->|Handle Missing/Outliers + Lag Features| D[XGBoost ML Model]
+    D -->|Predictions| B
+    B -->|Logs & Monitoring| E[(predictions.log)]
+    B -->|JSON Response| A
+```
 
-The project is split into three main operational modules:
-
-1. **`generate_data.py` (Data Synthesis)**:
-   - Synthesizes several years of hourly historical data into a local `energy_data.csv`.
-   - Programmatically embeds realistic correlations into the data points: Higher consumption during extreme heat/cold (HVAC usage), lower consumption on weekends, and distinct daily behavioral peaks (mornings and evenings).
-
-2. **`train_model.py` (AI Training Pipeline)**:
-   - Ingests the historical dataset and executes Feature Engineering (e.g., parsing raw 'Datetimes' into variables a model can understand like 'Hour', 'Day of Year', 'Is Weekend').
-   - Trains a `scikit-learn` **Random Forest Regressor** to predict energy usage with high accuracy (R² typically > 0.95), dumping the trained parameters to a lightweight `model.joblib` file.
-
-3. **`app.py` (Streamlit Frontend Data-App)**:
-   - Serves an interactive **Streamlit** frontend accessible in any web browser.
-   - Loads the compiled dataset and AI model into cache memory to enable instantaneous grid simulation metrics and Plotly graphic renderings based entirely on real-time user sliding/editing actions.
+## 🛠️ Tech Stack
+- **Frontend**: React, Vite, Recharts, Lucide-React, Modern Glassmorphic CSS
+- **Backend**: FastAPI, Uvicorn, Pydantic (Data validation)
+- **Machine Learning**: XGBoost, Scikit-Learn (GridSearchCV), Pandas, NumPy
+- **Deployment**: Docker, Docker Compose
 
 ## 🚀 Getting Started
 
-Follow these steps to run the application on your local machine:
+You can run this project locally using Python directly, or via Docker.
 
-### 1. Install Dependencies
-Ensure you have Python installed, then install the required packages:
-```bash
-pip install -r requirements.txt
-```
+### Method 1: Using Docker (Recommended for Production)
+Ensure you have Docker and Docker Compose installed.
 
-### 2. Generate Historical Data
-Run the data synthesizer to physically create the `energy_data.csv` database:
+1. Clone the repository and navigate into it.
+2. Run the services:
+   ```bash
+   docker-compose up --build
+   ```
+3. Open your browser and navigate to `http://localhost:3000`. The API will run on `http://localhost:8000`.
+
+### Method 2: Local Development (Manual Setup)
+
+**1. Data & Model Generation:**
 ```bash
+# Install core ML dependencies
+pip install pandas numpy scikit-learn xgboost
+# Generate historical data & simulate messy data trends
 python generate_data.py
-```
-
-### 3. Train the AI Model
-Train the Random Forest model to lock in your algorithm and output `model.joblib`:
-```bash
+# Run the pipeline & train the XGBoost model
 python train_model.py
 ```
 
-### 4. Launch the Dashboard
-Start the Streamlit web application:
+**2. Start Backend API (FastAPI):**
 ```bash
-streamlit run app.py
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
-*The Streamlit server will actively output a URL. Navigate to `http://localhost:8501` in your web browser to play with the interactive dashboard.*
 
-## 🛠️ Built With Built With modern Python Stack
-* [Python](https://www.python.org/) - Core programming logic
-* [Streamlit](https://streamlit.io/) - Web framework & dashboard UI
-* [Scikit-Learn](https://scikit-learn.org/) - Machine Learning Regressor Models
-* [Plotly](https://plotly.com/) - Advanced interactive charting and heatmaps
-* [Pandas & NumPy](https://pandas.pydata.org/) - Data Structuring, Filtering, and Mathematics
+**3. Start Frontend UI (React):**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## ✨ Key Features
+- **Proper Time-Series Handling**: Incorporates temporal lag features (e.g. `Temp_lag24`, `Temp_rolling_mean_24`) within the data pipeline to give the model 'memory' of past weather trends.
+- **Automated Data Pipeline**: Deals with missing values (via interpolation) and caps unexpected data outliers dynamically before inference.
+- **Batch Processing**: Supports raw CSV data uploads for processing thousands of predictions in milliseconds.
+- **System Monitoring**: Implements basic logging (`logs/predictions.log`) tracking API health and traffic load.
+
+## 💡 Industry Readiness
+This project was upgraded from a flat Streamlit script to a modern decouple architecture perfectly suited for deployments on AWS (via ECS) or Render/Vercel pipelines. The data pipeline design mirrors real-world MLOps practices.
